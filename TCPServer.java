@@ -13,7 +13,6 @@ class TCPServer {
 	private boolean logged_in = false;
 	private String account = "";
 	private String pword = ""; 
-	private Connection c = null;
     public static void main(String argv[]) throws Exception 
     { 
 		String commandline;
@@ -45,12 +44,30 @@ class TCPServer {
 	private static String Commandlevel(String commandline){
 		String response ="";
 		String[] commandarray = commandline.split(" ");
-
+		Connection c = null;
+		Statement stmt = null;
 		switch(commandarray[0]){
 			case "USER":
 			if (commandarray.length < 2){
 				return "-Invalid user-id, try again";
 			}
+			try{
+				Class.forName("org.sqlite.JDBC");
+				c = DriverManager.getConnection("jdbc:sqlite:cs725.db");
+				stmt = c.createStatement();
+				ResultSet rs = stmt.executeQuery(String.format("SELECT %s From user-id;",commandarray[1]));
+				if (rs.wasNull()){
+					response = "-Invalid user-id, try again";
+				}else{
+					if (rs.getString("pword") != null){
+					
+					}
+				}
+			}catch (Exception sqle){
+				return "SqlException";
+			}
+			
+			
 			//SQL check for user-id
 			//If user has password request
 			break;
