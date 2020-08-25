@@ -10,6 +10,8 @@ import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 class TCPServer { 
 	
@@ -88,21 +90,50 @@ class TCPServer {
 	private String List(String[] commandarray){
 
 		File[] f_FileList;
-		File f = new File(curdirpath);
-		f_FileList = f.listFiles();
+		File f;
+		String targdir;
+		
 
-		String flag = commandarray[1];
-
+		String flag;
+		String streamString;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy kk:mm");
 		
-		try {
-			
-			
-		
-		} catch (Exception e) {
-			return "-";
-		
+		if(commandarray.length >= 3){
+			Path dirPath = Paths.get(commandarray[2]);
+			targdir = dirPath.toString();
+			flag  = commandarray[1]; 
+		} else if (commandarray.length < 2){
+			targdir = curdirpath;
+			flag  = commandarray[1];
+		} else{
+			targdir = curdirpath;
+			flag = "F";
 		}
-		return "+";
+
+		f = new File(targdir);
+		f_FileList = f.listFiles();
+			
+			if(flag.equalsIgnoreCase("f") || flag.equalsIgnoreCase("v")){
+				streamString = "+" + targdir + "\n./\n";
+				for (File fi : f_FileList){
+					String filename = fi.getName();
+					if (fi.isDirectory()){
+						filename.concat(File.separator);
+					}
+					
+					if(flag.equalsIgnoreCase("v")){
+						Long lastmodifiedtime = f.lastModified();
+						String lastmodifiedDate = dateFormat.format(new Date(lastmodifiedtime));
+						String f_size = String.valueOf(fi.length());
+						streamString.concat(String.format("%s -%s -%s\n", filename, f_size, lastmodifiedDate));
+					}else{
+						streamString.concat(String.format("%s\n", filename));
+						}						
+				}
+			}else{
+				return "-error no format specified";
+			}
+			return streamString;
 	}
 
 	private String CDIR(String[] commandarray){
