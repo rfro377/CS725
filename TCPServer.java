@@ -7,6 +7,8 @@
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -169,8 +171,6 @@ class TCPServer {
 				if (result == "!"){
 					response = (String.format("!changed current directory to %s", newdir.toString()));
 					curdirpath = newdir.toString();
-				} else {
-
 				}
 			}
 		}
@@ -205,6 +205,70 @@ class TCPServer {
 		}catch (Exception sqle){
 			return "SqlException";
 		}
+	}
+
+	private String KILL(String[] commandarray){
+		String Filename;
+		if(commandarray.length < 2){
+			return "-Not deleted because : No File specified";
+		}
+		Path removefile = Paths.get(curdirpath + commandarray[1]);
+		Filename = removefile.getFileName().toString();
+
+		try {
+			Files.delete(removefile);
+			return String.format("+deleted %s", Filename);
+			
+		} catch (NoSuchFileException e) {
+			//TODO: handle exception
+			return "-error no such file exists";
+		} catch (IOException e) {
+			return "-error file is protected";
+		}
+	}
+
+	private String TOBE(){
+		String input;
+		String[] input_array;
+		try{
+			while(true){
+
+				input = inFromClient.readLine();
+				input_array = input.split(" ");
+
+				if (input_array[0] == "TOBE"){
+					if(input_array.length < 2){
+						return "-File could not be changed : no name specified";
+					}
+
+					return input_array[1];
+				}
+			}
+		}catch(IOException ioe){
+			return "-exception";
+		}
+
+	}
+
+	private String NAME(String[] commandarray){
+		String response;
+		if(commandarray.length <2){
+			return "-error missing argument";
+		}
+		String filename = commandarray[1];
+		File targfile = new File(curdirpath + File.separator + filename);
+
+		if(!targfile.isFile()){
+			return String.format("-can't find file: %s", filename);
+		} else{
+			response = "+file present";
+			//send message
+			
+		}
+		
+		
+
+		return "";
 	}
 
 	private String PASS(String[] commandarray){
@@ -353,6 +417,8 @@ class TCPServer {
 			break;
 			case "CDIR":
 				response  = CDIR(commandarray);
+			break;
+			case "KILL":
 			break;
 		}
 
